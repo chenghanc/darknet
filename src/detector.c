@@ -1334,6 +1334,11 @@ float validate_detector_map(char *datacfg, char *cfgfile, char *weightfile, floa
 
         float class_precision = (float)tp_for_thresh_per_class[i] / ((float)tp_for_thresh_per_class[i] + (float)fp_for_thresh_per_class[i]);
         float class_recall = (float)tp_for_thresh_per_class[i] / ((float)tp_for_thresh_per_class[i] + (float)(truth_classes_count[i] - tp_for_thresh_per_class[i]));
+        float fn_for_thresh_per_class = ((float)tp_for_thresh_per_class[i] / (float)class_recall) - (float)tp_for_thresh_per_class[i];
+        float miss_rate_per_class = (float)fn_for_thresh_per_class / ((float)fn_for_thresh_per_class + (float)tp_for_thresh_per_class[i]);
+        printf("Precision = %1.2f, Recall = %1.2f, FN = %1.f, Miss Rate = %1.2f %% \n", class_precision, class_recall, fn_for_thresh_per_class, miss_rate_per_class*100);
+        printf("FN = %1.f \n", (float)(truth_classes_count[i] - tp_for_thresh_per_class[i]));
+        printf("Labels = %1.f \n\n", (float)(truth_classes_count[i]));
         //printf("Precision = %1.2f, Recall = %1.2f, avg IOU = %2.2f%% \n\n", class_precision, class_recall, avg_iou_per_class[i]);
 
         mean_average_precision += avg_precision;
@@ -1342,11 +1347,13 @@ float validate_detector_map(char *datacfg, char *cfgfile, char *weightfile, floa
     const float cur_precision = (float)tp_for_thresh / ((float)tp_for_thresh + (float)fp_for_thresh);
     const float cur_recall = (float)tp_for_thresh / ((float)tp_for_thresh + (float)(unique_truth_count - tp_for_thresh));
     const float f1_score = 2.F * cur_precision * cur_recall / (cur_precision + cur_recall);
+    const float miss_rate = (float)(unique_truth_count - tp_for_thresh) / ((float)(unique_truth_count - tp_for_thresh) + (float)tp_for_thresh);
     printf("\n for conf_thresh = %1.2f, precision = %1.2f, recall = %1.2f, F1-score = %1.2f \n",
         thresh_calc_avg_iou, cur_precision, cur_recall, f1_score);
 
     printf(" for conf_thresh = %0.2f, TP = %d, FP = %d, FN = %d, average IoU = %2.2f %% \n",
         thresh_calc_avg_iou, tp_for_thresh, fp_for_thresh, unique_truth_count - tp_for_thresh, avg_iou * 100);
+    printf(" miss rate = %0.2f %% \n", miss_rate*100);
 
     mean_average_precision = mean_average_precision / classes;
     printf("\n IoU threshold = %2.0f %%, ", iou_thresh * 100);
