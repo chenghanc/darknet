@@ -3,6 +3,11 @@ name: Darknet Continuous Integration
 on:
   push:
   workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        required: false
+        default: false
   schedule:
     - cron: '0 0 * * *'
 
@@ -71,12 +76,16 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+
     - uses: lukka/get-cmake@latest
 
     - name: Update apt
       run: sudo apt update
     - name: Install dependencies
-      run: sudo apt install yasm nasm
+      run: sudo apt-get install -y yasm nasm gperf libgles2-mesa-dev libx11-dev libxft-dev libxext-dev libxrandr-dev libxi-dev libxcursor-dev libxdamage-dev libxinerama-dev
 
     - name: 'Install CUDA'
       run: ${{ github.workspace }}/scripts/deploy-cuda.sh
@@ -144,7 +153,7 @@ jobs:
     - name: Update apt
       run: sudo apt update
     - name: Install dependencies
-      run: sudo apt install yasm nasm
+      run: sudo apt-get install -y yasm nasm gperf libgles2-mesa-dev libx11-dev libxft-dev libxext-dev libxrandr-dev libxi-dev libxcursor-dev libxdamage-dev libxinerama-dev
 
     - name: 'Install CUDA'
       run: ${{ github.workspace }}/scripts/deploy-cuda.sh
@@ -195,7 +204,7 @@ jobs:
     - name: Update apt
       run: sudo apt update
     - name: Install dependencies
-      run: sudo apt install yasm nasm
+      run: sudo apt-get install -y yasm nasm gperf libgles2-mesa-dev libx11-dev libxft-dev libxext-dev libxrandr-dev libxi-dev libxcursor-dev libxdamage-dev libxinerama-dev
 
     - name: 'Install CUDA'
       run: ${{ github.workspace }}/scripts/deploy-cuda.sh
@@ -370,6 +379,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+
     - name: Install dependencies
       run: brew install libomp yasm nasm
 
@@ -396,7 +409,7 @@ jobs:
 
     - name: 'Build'
       shell: pwsh
-      run: ${{ github.workspace }}/build.ps1 -UseVCPKG -DoNotUpdateVCPKG -DisableInteractive -DoNotUpdateDARKNET
+      run: ${{ github.workspace }}/build.ps1 -UseVCPKG -DoNotUpdateVCPKG -EnableOPENCV -DisableInteractive -DoNotUpdateDARKNET
 
     - uses: actions/upload-artifact@v2
       with:
@@ -464,6 +477,10 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
+
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
 
     - uses: lukka/get-cmake@latest
 
@@ -638,9 +655,9 @@ jobs:
 
     - name: 'Build'
       env:
-        CUDA_PATH: "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.5"
-        CUDA_TOOLKIT_ROOT_DIR: "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.5"
-        CUDACXX: "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.5\\bin\\nvcc.exe"
+        CUDA_PATH: "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.6"
+        CUDA_TOOLKIT_ROOT_DIR: "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.6"
+        CUDACXX: "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.6\\bin\\nvcc.exe"
       shell: pwsh
       run: ${{ github.workspace }}/build.ps1 -EnableCUDA -DisableInteractive -DoNotUpdateDARKNET
 
